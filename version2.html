@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tic Tac Toe</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to right, #a1ffce, #faffd1);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    main {
+      text-align: center;
+      background-color: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    #symbol-select {
+      margin-bottom: 20px;
+    }
+
+    #symbol-select button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #container {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .box {
+      height: 100px;
+      width: 100px;
+      font-size: 2.5rem;
+      font-weight: bold;
+      border: 2px solid #444;
+      cursor: pointer;
+      background-color: #fff;
+    }
+
+    .box.x {
+      color: rgb(255, 136, 0);
+    }
+
+    .box.o {
+      color: rgba(225, 8, 8, 0.818);
+    }
+
+    .box:hover {
+      background-color: #f0f0f0;
+    }
+
+    #reset, #n-game {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      background-color: #333;
+      color: #fff;
+      border-radius: 5px;
+    }
+
+    #reset:hover, #n-game:hover {
+      background-color: #555;
+    }
+
+    #gover {
+      display: none;
+      margin-top: 20px;
+    }
+
+    #gover.show {
+      display: block;
+    }
+
+    #winner {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: rgb(0, 90, 128);
+    }
+
+    #credit {
+      position: absolute;
+      bottom: 10px;
+      right: 15px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Tic Tac Toe</h1>
+
+    <div id="symbol-select">
+      <p><strong>Select your symbol:</strong></p>
+      <button onclick="setPlayer('X')">X</button>
+      <button onclick="setPlayer('O')">O</button>
+    </div>
+
+    <div id="container" style="display:none;">
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+    </div>
+
+    <button id="reset" style="display:none;">Reset</button>
+
+    <div id="gover">
+      <div id="winner"></div>
+      <button id="n-game">New Game</button>
+    </div>
+
+    <div id="credit">Pandit Shivam Tiwari</div>
+  </main>
+<script>
+  const boxes = document.querySelectorAll(".box");
+  const resetBtn = document.getElementById("reset");
+  const newGameBtn = document.getElementById("n-game");
+  const gover = document.getElementById("gover");
+  const winnerText = document.getElementById("winner");
+  const symbolSelect = document.getElementById("symbol-select");
+  const container = document.getElementById("container");
+
+  let userSymbol = "";
+  let aiSymbol = "";
+  let gameStarted = false;
+
+  const winPatterns = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
+  ];
+
+  function setPlayer(symbol) {
+    userSymbol = symbol;
+    aiSymbol = (symbol === "X") ? "O" : "X";
+    symbolSelect.style.display = "none";
+    container.style.display = "grid";
+    resetBtn.style.display = "inline-block";
+    gameStarted = true;
+  }
+
+  boxes.forEach((box, index) => {
+    box.addEventListener("click", () => {
+      if (!gameStarted || box.innerText !== "") return;
+
+      makeMove(box, userSymbol);
+
+      if (!checkWinner()) {
+        setTimeout(() => {
+          aiMove();
+        }, 500); // small delay to mimic thinking
+      }
+    });
+  });
+
+  function makeMove(box, symbol) {
+    box.innerText = symbol;
+    box.classList.add(symbol.toLowerCase());
+    box.disabled = true;
+  }
+
+  function aiMove() {
+    let available = [...boxes].filter(b => b.innerText === "");
+    if (available.length === 0) return;
+
+    let randomBox = available[Math.floor(Math.random() * available.length)];
+    makeMove(randomBox, aiSymbol);
+    checkWinner();
+  }
+
+  function checkWinner() {
+    for (const pattern of winPatterns) {
+      const [a, b, c] = pattern;
+      const val1 = boxes[a].innerText;
+      const val2 = boxes[b].innerText;
+      const val3 = boxes[c].innerText;
+
+      if (val1 && val1 === val2 && val2 === val3) {
+        boxes.forEach(box => box.disabled = true);
+        if (val1 === userSymbol) {
+          winnerText.innerHTML = "🎉 You are the <b>Winner!</b>";
+        } else {
+          winnerText.innerHTML = "🙏 Jai Shree Ram! Try <b>1 more time</b>.";
+        }
+        gover.classList.add("show");
+        return true;
+      }
+    }
+
+    const isDraw = [...boxes].every(box => box.innerText !== "");
+    if (isDraw) {
+      winnerText.innerHTML = "🤝 It's a <b>Draw</b>";
+      gover.classList.add("show");
+      return true;
+    }
+
+    return false;
+  }
+
+  function resetBoard() {
+    boxes.forEach(box => {
+      box.innerText = "";
+      box.disabled = false;
+      box.classList.remove("x", "o");
+    });
+  }
+
+  resetBtn.addEventListener("click", resetBoard);
+
+  newGameBtn.addEventListener("click", () => {
+    gover.classList.remove("show");
+    resetBoard();
+  });
+</script>
+  
+</body>
+</html>
